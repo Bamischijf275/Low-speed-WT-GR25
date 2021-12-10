@@ -36,11 +36,7 @@ def plot_pressure_distribution(alpha, df, name):
 
 
 def plot_pressure_distribution_all_alphas(file, prefix):
-    df = load_pressures_from_file(file)
-
-    # Ignore hysteresis part
-    idx_alpha_max = df["Alpha"].idxmax() + 1
-    df = df.iloc[:idx_alpha_max]
+    df = load_pressures_from_file(file, remove_hysteresis=True)
 
     for alpha in df["Alpha"]:
         plot_pressure_distribution(alpha, df, f"{prefix}_{alpha:.1f}")

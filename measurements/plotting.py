@@ -21,6 +21,8 @@ def format_plot(
 ):
     fig = plt.gcf()
     for ax in fig.axes[:1]:
+        ax.axhline(0, linewidth=1.5, c="black")
+
         ax.get_xaxis().set_minor_locator(xlocator)
         ax.get_yaxis().set_minor_locator(ylocator)
 
