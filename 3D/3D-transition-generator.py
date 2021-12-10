@@ -14,12 +14,18 @@ def grab_values(filename, skip_begin, skip_end):
     return y_lst, XTrtop_lst
 
 def plot_config(title):
+    """
+    Contains the configuration for the plots
+    """
+    line_thickness = 6
+    line_color = 'black'
+
     plt.ylim(-0.05, 0.3)
     plt.xlim(0, 0.7)
-    plt.plot((0,0),(0,0.24),linewidth = 6, color = "black")
-    plt.plot((0,0.64),(0.24,0.24),linewidth = 6,color = "black")
-    plt.plot((0.64,0.64),(0.24,0),linewidth = 6,color = "black")
-    plt.plot((0.64,0),(0.0,0.0),linewidth = 6,color = "black")
+    plt.plot((0,0),(0,0.24),linewidth = line_thickness, color = line_color)
+    plt.plot((0,0.64),(0.24,0.24),linewidth = line_thickness,color = line_color)
+    plt.plot((0.64,0.64),(0.24,0),linewidth = line_thickness,color = line_color)
+    plt.plot((0.64,0),(0.0,0.0),linewidth = line_thickness,color = line_color)
     plt.title(title)
     plt.show()
 
