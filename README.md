@@ -5,9 +5,11 @@ This repository contains the code for the analysis of measurement data and numer
 This project requires the following Python packages:
 * `black`
 * `numpy`
+* `scipy`
 * `pandas`
 * `matplotlib`
 * `seaborn`
+* `Pillow`
 
 ## Code Style
 This project uses the _Black_ code style (https://github.com/psf/black) for consistency and clarity. Before committing, format the project code by running `black .` in the project directory.

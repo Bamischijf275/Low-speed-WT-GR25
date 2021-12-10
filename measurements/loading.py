@@ -1,4 +1,8 @@
+import glob
+
+import numpy as np
 import pandas as pd
+from PIL import Image
 
 
 def load_pressures_from_file(filename, remove_hysteresis=False):
@@ -22,6 +26,29 @@ def load_pressures_from_file(filename, remove_hysteresis=False):
         df = df.iloc[:idx_alpha_max]
 
     return df
+
+
+def load_infrared_from_file(folder):
+    individual_data = []
+    for file in glob.glob(f"{folder}/*.csv"):
+        # Remove last column which is NaN
+        individual_data.append(np.delete(np.genfromtxt(file, delimiter=";"), -1, axis=1))
+
+    # Average all images in the folder
+    averaged_data = np.average(individual_data, axis=0)
+
+    # Normalize to [0, 1]
+    min_temp = averaged_data.min()
+    max_temp = averaged_data.max()
+    averaged_data = (averaged_data - min_temp) / (max_temp - min_temp)
+
+    image = Image.fromarray(np.uint8(averaged_data * 255))
+    # Rotate so LE and TE are vertical
+    image = image.rotate(-1.8)
+    # Crop for clear image of wing without wall and lower tuft
+    image = image.crop((50, 30, image.width - 50, image.height - 130))
+
+    return np.array(image)
 
 
 if __name__ == "__main__":
