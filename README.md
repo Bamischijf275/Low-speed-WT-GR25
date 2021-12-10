@@ -4,6 +4,7 @@ This repository contains the code for the analysis of measurement data and numer
 ## Requirements
 This project requires the following Python packages:
 * `black`
+* `numpy`
 * `pandas`
 * `matplotlib`
 * `seaborn`

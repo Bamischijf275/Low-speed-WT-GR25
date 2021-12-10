@@ -32,10 +32,11 @@ def format_plot(
 
 def save_plot(name: str, type="pdf"):
     os.makedirs("plots", exist_ok=True)
-    name = name.replace(".", "_")
+    name = name.replace(".", "-")
     plt.savefig(
         f"plots/plot_{name}.{type}",
         dpi=300,
         bbox_inches="tight",
         pad_inches=0,
     )
+    plt.close()
