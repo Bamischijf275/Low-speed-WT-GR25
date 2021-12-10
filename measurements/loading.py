@@ -12,10 +12,12 @@ def load_pressures_from_file(filename):
     # Remove whitespace from column names
     header = list(map(lambda s: s.strip(), header))
     # Load actual data
-    df = pd.read_csv(f"data/cp/{filename}.txt", sep="\t", skiprows=2, names=header).iloc[:, :-1]
+    df = pd.read_csv(
+        f"data/cp/{filename}.txt", sep="\t", skiprows=2, index_col=False, names=header
+    ).iloc[:, 1:]
     return df
 
 
 if __name__ == "__main__":
     df = load_pressures_from_file("2D/corr_test")
-    print(df.info())
+    print(df.head())
