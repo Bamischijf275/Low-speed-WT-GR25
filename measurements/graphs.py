@@ -3,10 +3,10 @@ import matplotlib.pyplot as plt
 import plotting
 from mpl_toolkits.axisartist.parasite_axes import HostAxes, ParasiteAxes
 
-
+# degree symbol
 degree = "\N{DEGREE SIGN}"
 
-
+# Load files
 data2d, hys2d = loading.load_pressures_from_file("2D/corr_test")
 data3d, hys3d = loading.load_pressures_from_file("3D/corr_test")
 
@@ -17,7 +17,7 @@ def convert_list(input):  # Convert into list if not
     return input
 
 
-def x_alpha(y, data, mode, hys=[]):
+def x_alpha(y, data, mode, hys=[]):  # X vs Alpha plots
     x = "Alpha"
     y = convert_list(y)
     data = convert_list(data)
@@ -25,19 +25,19 @@ def x_alpha(y, data, mode, hys=[]):
     hys = convert_list(hys)
 
     if len(y) != 1 and len(data) == 1 and len(mode) == 1:
-        multi_plot(y, data[0], mode[0], hys)
+        multi_plot(y, data[0], mode[0], hys)  # Plot with varying y-axes
     else:
         for i in y:  # Plot all the lines
             for j in range(len(data)):  # 2D/3D/Both
                 plt.plot(data[j][x], data[j][i], label=(f"{i} in {mode[j]}"), marker=".")
 
-                if len(hys) != 0:
+                if len(hys) != 0:  # plot hysteresis with different color
                     plt.plot(hys[j][x], hys[j][i], marker=".")
 
-        plt.title(f"{', '.join(y)} vs {x} [{degree}] in {', '.join(mode)}")
-        plt.xlim(-2.5, 18.5)
+        plt.title(f"{', '.join(y)} vs {x} [{degree}] in {', '.join(mode)}")  # title
+        plt.xlim(-2.5, 18.5)  # x limit
 
-        if len(mode) != 1:
+        if len(mode) != 1:  # if only one curve, don't include legend
             plt.legend()
 
         plt.xlabel(x)
@@ -47,7 +47,7 @@ def x_alpha(y, data, mode, hys=[]):
         # plt.show()
 
 
-def cl_cd(data, mode, hys=[]):
+def cl_cd(data, mode, hys=[]):  # drag polar graph
     data = convert_list(data)
     mode = convert_list(mode)
     hys = convert_list(hys)
@@ -71,14 +71,19 @@ def cl_cd(data, mode, hys=[]):
     # plt.show()
 
 
-def multi_plot(y, data, mode, hys=[]):
+def multi_plot(y, data, mode, hys=[]):  # graphs for multiple y-axes
 
     fig = plt.figure()
-    if len(y) == 3:
+    if len(y) == 3:  # check if input has three items
         bool3 = True
     else:
         bool3 = False
-    limits = {"Cl": [-0.25, 1], "Cd": [-0.25 / 2, 0.25 * 2], "Cm": [-0.125 * 2 / 3, 0.5 * 2 / 3]}
+
+    limits = {
+        "Cl": [-0.25, 1],
+        "Cd": [-0.25 / 2, 0.25 * 2],
+        "Cm": [-0.125 * 2 / 3, 0.5 * 2 / 3],
+    }  # Change until the 3 curves look nice and readable
 
     host = fig.add_axes([0.15, 0.1, 0.6, 0.8], axes_class=HostAxes)
     par1 = ParasiteAxes(host, sharex=host)
@@ -95,11 +100,12 @@ def multi_plot(y, data, mode, hys=[]):
     par1.axis["right"].label.set_visible(True)
 
     plt.title(f"{', '.join(y)} vs Alpha [{degree}] in {mode}")
+
     if bool3:
         par2.axis["right2"] = par2.new_fixed_axis(loc="right", offset=(60, 0))
 
     (p1,) = host.plot(data["Alpha"], data[y[0]], label=y[0], marker=".")
-    # host.plot(hys[0]['Alpha'], hys[0][y[0]], marker='.')
+    # host.plot(hys[0]['Alpha'], hys[0][y[0]], marker='.')  #plot hysteresis, but did not include to because it became very cluttered
 
     (p2,) = par1.plot(data["Alpha"], data[y[1]], label=y[1], marker=".")
     if bool3:
