@@ -36,7 +36,7 @@ def plot_pressure_distribution(alpha, df, name):
 
 
 def plot_pressure_distribution_all_alphas(file, prefix):
-    df = load_pressures_from_file(file, remove_hysteresis=True)
+    df, trash = load_pressures_from_file(file)  # Don't need hysteresis, only df
 
     for alpha in df["Alpha"]:
         plot_pressure_distribution(alpha, df, f"{prefix}_{alpha:.1f}")
