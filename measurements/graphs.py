@@ -1,118 +1,240 @@
 import loading
 import matplotlib.pyplot as plt
 import plotting
+from mpl_toolkits.axisartist.parasite_axes import HostAxes, ParasiteAxes
 
-
-from mpl_toolkits.axes_grid1 import host_subplot
-import mpl_toolkits.axisartist as AA
-
-
+# degree symbol
 degree = "\N{DEGREE SIGN}"
 
+# Load files
+data2d, hys2d = loading.load_pressures_from_file("2D/corr_test")
+data3d, hys3d = loading.load_pressures_from_file("3D/corr_test")
 
-data2d = loading.load_pressures_from_file("2D/corr_test")
-data3d = loading.load_pressures_from_file("3D/corr_test")
 
-def convertList(input):  # Convert into list if not
+def convert_list(input):  # Convert into list if not
     if not isinstance(input, list):
         input = [input]
-
     return input
 
-def x_alpha(y, data, mode):
-    x = 'Alpha'
-    y = convertList(y)
-    data = convertList(data)
-    mode = convertList(mode)
-    print(data)
-    for i in y:  # Plot all the lines
-        k = 0
-        for j in data:  # 2D/3D/Both
-            plt.plot(j[x], j[i], label=(f"{i} in {mode[k]}"), marker='D')
-            k += 1
 
-    plt.title(f"{', '.join(y)} vs {x} [{degree}] in {', '.join(mode)}")
-    plt.xlim(-2.5, 18.5)
+def x_alpha(y, data, mode, hys=[]):  # X vs Alpha plots
+    x = "Alpha"
+    y = convert_list(y)
+    data = convert_list(data)
+    mode = convert_list(mode)
+    hys = convert_list(hys)
 
-    # if y == 'Cl':
-    #     plt.ylim(-0.25, 1)
-    # elif y == 'Cd':
-    #     plt.ylim(0, 0.25)
-    # else:
-    #     plt.ylim(-0.085, 0.035)
+    if len(y) != 1 and len(data) == 1 and len(mode) == 1:
+        multi_plot(y, data[0], mode[0], hys)  # Plot with varying y-axes
+    else:
+        for i in y:  # Plot all the lines
+            for j in range(len(data)):  # 2D/3D/Both
+                plt.plot(data[j][x], data[j][i], label=(f"{i} in {mode[j]}"), marker=".")
 
-    plt.legend()
-    plt.xlabel(x)
-    plt.ylabel(', '.join(y))
-    plt.grid(visible=True)
-    plotting.format_plot()
-    plt.show()
+                if len(hys) != 0:  # plot hysteresis with different color
+                    plt.plot(hys[j][x], hys[j][i], marker=".")
+
+        plt.title(f"{', '.join(y)} vs {x} [{degree}] in {', '.join(mode)}")  # title
+        plt.xlim(-2.5, 18.5)  # x limit
+
+        if len(mode) != 1:  # if only one curve, don't include legend
+            plt.legend()
+
+        plt.xlabel(x)
+        plt.ylabel(", ".join(y))
+        plt.grid(visible=True)
+        plotting.format_plot()
+        # plt.show()
 
 
-def cl_cd(data, mode):
-    x, y = 'Cd', 'Cl'
-    data.plot(x=x, y=y, marker='D')
-    plt.title(f"{y} vs {x} in [{mode}]")
+def cl_cd(data, mode, hys=[]):  # drag polar graph
+    data = convert_list(data)
+    mode = convert_list(mode)
+    hys = convert_list(hys)
+
+    x, y = "Cd", "Cl"
+    for i in range(len(data)):
+        plt.plot(data[i][x], data[i][y], label=mode[i], marker=".")
+
+        if len(hys) != 0:
+            plt.plot(hys[i][x], hys[i][y], marker=".")
+
+    if len(mode) != 1:
+        plt.legend()
+    plt.title(f"{y} vs {x} in [{', '.join(mode)}]")
     plt.xlim(0, 0.25)
     plt.ylim(-0.25, 1)
     plt.xlabel(x)
     plt.ylabel(y)
     plt.grid(visible=True)
     plotting.format_plot()
-    plt.show()
+    # plt.show()
 
-def multiy(y_parameters):
-    host = host_subplot(111, axes_class=AA.Axes)
-    plt.subplots_adjust(right=0.75)
-    par1 = host.twinx()
-    par2 = host.twinx()
-    offset = 60
-    new_fixed_axis = par2.get_grid_helper().new_fixed_axis
-    par2.axis["right"] = new_fixed_axis(loc="right",
-                                        axes=par2,
-                                        offset=(offset, 0))
-    par2.axis["right"].toggle(all=True)
 
-    host.set_xlim(-2.5, 18.5)  # Alpha range
+def multi_plot(y, data, mode, hys=[]):  # graphs for multiple y-axes
 
-    host.set_ylim(-0.5, 1)
+    fig = plt.figure()
+    if len(y) == 3:  # check if input has three items
+        bool3 = True
+    else:
+        bool3 = False
 
-    host.set_xlabel("Alpha")
-    host.set_ylabel("Cl")
-    par1.set_ylabel("Cd")
-    par2.set_ylabel("Cm")
+    limits = {
+        "Cl": [-0.25, 1],
+        "Cd": [-0.25 / 2, 0.25 * 2],
+        "Cm": [-0.125 * 2 / 3, 0.5 * 2 / 3],
+    }  # Change until the 3 curves look nice and readable
 
-    p1, = host.plot(data2d['Alpha'], data2d['Cl'], label="Cl")
-    p2, = par1.plot(data2d['Alpha'], data2d['Cd'], label="Cd")
-    p3, = par2.plot(data2d['Alpha'], data2d['Cm'], label="Cm")
+    host = fig.add_axes([0.15, 0.1, 0.6, 0.8], axes_class=HostAxes)
+    par1 = ParasiteAxes(host, sharex=host)
+    if bool3:
+        par2 = ParasiteAxes(host, sharex=host)
+    host.parasites.append(par1)
+    if bool3:
+        host.parasites.append(par2)
 
-    par1.set_ylim(0, 0.25)
-    par2.set_ylim(-0.25, 25)
+    host.axis["right"].set_visible(False)
+
+    par1.axis["right"].set_visible(True)
+    par1.axis["right"].major_ticklabels.set_visible(True)
+    par1.axis["right"].label.set_visible(True)
+
+    plt.title(f"{', '.join(y)} vs Alpha [{degree}] in {mode}")
+
+    if bool3:
+        par2.axis["right2"] = par2.new_fixed_axis(loc="right", offset=(60, 0))
+
+    (p1,) = host.plot(data["Alpha"], data[y[0]], label=y[0], marker=".")
+    # host.plot(hys[0]['Alpha'], hys[0][y[0]], marker='.')  #plot hysteresis, but did not include to because it became very cluttered
+
+    (p2,) = par1.plot(data["Alpha"], data[y[1]], label=y[1], marker=".")
+    if bool3:
+        (p3,) = par2.plot(data["Alpha"], data[y[2]], label=y[2], marker=".")
+
+    host.set_xlim(-2.5, 18.5)
+
+    host.set_ylim(limits[y[0]])
+    par1.set_ylim(limits[y[1]])
+    if bool3:
+        par2.set_ylim(limits[y[2]])
+
+    host.set_xlabel(f"Alpha [{degree}]")
+    host.set_ylabel(y[0])
+    par1.set_ylabel(y[1])
+    if bool3:
+        par2.set_ylabel(y[2])
 
     host.legend()
 
     host.axis["left"].label.set_color(p1.get_color())
     par1.axis["right"].label.set_color(p2.get_color())
-    par2.axis["right"].label.set_color(p3.get_color())
+    if bool3:
+        par2.axis["right2"].label.set_color(p3.get_color())
 
-    plt.draw()
-    plt.show()
+    plt.grid(visible=True)
+    plotting.format_plot()
+    # plt.show()
 
-# multiy()
+
+x_alpha(["Cl", "Cd"], data2d, "2D", hys2d)
+plt.show()
 
 # x_alpha('Cl', data2d, '2D')
+# plotting.save_plot("Cl-Alpha 2D")
+#
 # x_alpha('Cl', data3d, '3D')
-
+# plotting.save_plot("Cl-Alpha 3D")
+#
+# x_alpha('Cl', data2d, '2D', hys2d)
+# plotting.save_plot("Cl-Alpha 2D with hysteresis")
+#
+# x_alpha('Cl', data3d, '3D', hys3d)
+# plotting.save_plot("Cl-Alpha 3D with hysteresis")
+#
+#
 # x_alpha('Cd', data2d, '2D')
+# plotting.save_plot("Cd-Alpha 2D")
+#
 # x_alpha('Cd', data3d, '3D')
+# plotting.save_plot("Cd-Alpha 3D")
+#
+# x_alpha('Cd', data2d, '2D', hys2d)
+# plotting.save_plot("Cd-Alpha 2D with hysteresis")
+#
+# x_alpha('Cd', data3d, '3D', hys3d)
+# plotting.save_plot("Cd-Alpha 3D with hysteresis")
+#
 #
 # x_alpha('Cm', data2d, '2D')
+# plotting.save_plot("Cm-Alpha 2D")
+#
 # x_alpha('Cm', data3d, '3D')
+# plotting.save_plot("Cm-Alpha 3D")
+#
+# x_alpha('Cm', data2d, '2D', hys2d)
+# plotting.save_plot("Cm-Alpha 2D with hysteresis")
+#
+# x_alpha('Cm', data3d, '3D', hys3d)
+# plotting.save_plot("Cm-Alpha 3D with hysteresis")
 #
 # cl_cd(data2d, "2D")
+# plotting.save_plot("Cl-Cd 2D")
+#
 # cl_cd(data3d, "3D")
+# plotting.save_plot("Cl-Cd 3D")
+#
+# cl_cd(data2d, "2D", hys2d)
+# plotting.save_plot("Cl-Cd 2D with hysteresis")
+#
+# cl_cd(data3d, "3D", hys3d)
+# plotting.save_plot("Cl-Cd 3D with hysteresis")
+#
+# cl_cd([data2d, data3d], ["2D", '3D'])
+# plotting.save_plot("Cl-Cd 2D & 3D")
+#
+# cl_cd([data2d, data3d], ["2D", '3D'], [hys2d, hys3d])
+# plotting.save_plot("Cl-Cd 2D & 3D with hysteresis")
+#
+#
+# x_alpha('Cl', [data2d, data3d], ['2D', '3D'])
+# plotting.save_plot("Cl-Alpha 2D & 3D")
+#
+# x_alpha('Cl', [data2d, data3d], ['2D', '3D'], [hys2d, hys3d])
+# plotting.save_plot("Cl-Alpha 2D & 3D with hysteresis")
+#
+#
+# x_alpha('Cd', [data2d, data3d], ['2D', '3D'])
+# plotting.save_plot("Cd-Alpha 2D & 3D")
+#
+#
+# x_alpha('Cd', [data2d, data3d], ['2D', '3D'], [hys2d, hys3d])
+# plotting.save_plot("Cd-Alpha 2D & 3D with hysteresis")
+#
+# x_alpha('Cm', [data2d, data3d], ['2D', '3D'])
+# plotting.save_plot("Cm-Alpha 2D & 3D")
+#
+# x_alpha('Cm', [data2d, data3d], ['2D', '3D'], [hys2d, hys3d])
+# plotting.save_plot("Cm-Alpha 2D & 3D with hysteresis")
+#
+#
+# x_alpha(['Cl', 'Cd', 'Cm'], [data2d], ['2D'])
+# plotting.save_plot("Cl,Cd,Cm-Alpha 2D")
+#
+#
+# x_alpha(['Cl', 'Cd', 'Cm'], [data2d], ['2D'], [hys2d])
+# plotting.save_plot("Cl,Cd,Cm-Alpha 2D with hysteresis")
+#
+# x_alpha(['Cl', 'Cd', 'Cm'], [data2d], ['3D'])
+# plotting.save_plot("Cl,Cd,Cm-Alpha 3D")
+#
+# x_alpha(['Cl', 'Cd', 'Cm'], [data2d], ['3D'], [hys3d])
+# plotting.save_plot("Cl,Cd,Cm-Alpha 3D with hysteresis")
+#
+# x_alpha(['Cl', 'Cd', 'Cm'], [data2d, data3d], ['2D', '3D'])
+# plotting.save_plot("Cl,Cd,Cm-Alpha 2D & 3D")
+#
+# x_alpha(['Cl', 'Cd', 'Cm'], [data2d, data3d], ['2D', '3D'], [hys2d, hys3d])
+# plotting.save_plot("Cl,Cd,Cm-Alpha 2D & 3D with hysteresis")
 
-x_alpha('Cl', [data2d, data3d], ['2D', '3D'])
-x_alpha(['Cl', 'Cd', 'Cm'], [data2d, data3d], ['2D', '3D'])
 
-#different color for hysteresis
+# slope calculation
