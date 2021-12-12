@@ -44,11 +44,13 @@ def load_infrared_from_file(folder):
 
     image = Image.fromarray(np.uint8(averaged_data * 255))
     # Rotate so LE and TE are vertical
-    image = image.rotate(-1.8)
+    image = image.rotate(-1.2, resample=Image.BICUBIC)
     # Crop for clear image of wing without wall and lower tuft
     image = image.crop((50, 30, image.width - 50, image.height - 130))
+    # Flip so flow comes from left
+    image = image.transpose(method=Image.FLIP_LEFT_RIGHT)
 
-    return np.array(image)
+    return np.array(image), image.height
 
 
 if __name__ == "__main__":

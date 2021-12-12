@@ -9,38 +9,49 @@ from measurements.loading import load_infrared_from_file
 from measurements.plotting import save_plot
 
 
+# Distance in px from LE/TE in which transition will not be detected
+# Necessary to prevent LE/TE to be detected as transition point
+EDGE_CUTOFF = 5
+
+
 def find_transition_point(image):
     # Average along span to get single chordwise line
     spanwise_average = np.average(image, axis=0)
     # Find pixel-by-pixel difference along chord
     chordwise_difference = np.diff(spanwise_average)
-    # Moving average with window size 5
-    chordwise_difference = uniform_filter1d(chordwise_difference, size=5)
+    # Moving average with window size 3
+    chordwise_difference = uniform_filter1d(chordwise_difference, size=3)
 
     # Crop image to wing without background
     x_leading_edge = chordwise_difference.argmax()
-    x_trailing_edge = chordwise_difference.argmin() + 1
-    # Cut off 10 px on either end to ensure transition is maximum difference and not LE/TE
-    chordwise_difference = chordwise_difference[x_leading_edge + 10 : x_trailing_edge - 10]
+    x_trailing_edge = chordwise_difference.argmin()
+    chordwise_difference = chordwise_difference[
+        x_leading_edge + EDGE_CUTOFF : x_trailing_edge - 2 * EDGE_CUTOFF
+    ]
 
-    # Add 10 px cutoff back to find x/c of transition
-    xc_transition = (chordwise_difference.argmax() + 10) / (len(chordwise_difference) + 20)
+    chord_length = x_trailing_edge - x_leading_edge
+
+    # Find x/c of transition
+    xc_transition = (chordwise_difference.argmin() + EDGE_CUTOFF) / chord_length
 
     # Convert to image coordinates for line in plot
-    x_transition = x_leading_edge + xc_transition * (len(chordwise_difference) + 20)
+    x_transition = x_leading_edge + xc_transition * chord_length
 
-    return xc_transition, x_transition
+    return xc_transition, x_transition, x_leading_edge, x_trailing_edge
 
 
 def plot_infrared_image(folder, prefix, alpha):
-    image = load_infrared_from_file(folder)
+    image, height = load_infrared_from_file(folder)
 
-    xc_transition, x_transition = find_transition_point(image)
+    xc_transition, x_transition, x_leading_edge, x_trailing_edge = find_transition_point(image)
 
     plt.imshow(image, cmap="plasma", interpolation="none")
 
-    # No clear transition beyond 10 deg
-    if alpha[0] == "-" or float(alpha.split("-")[0]) <= 8.5:
+    plt.text(x_leading_edge - 5, height - 10, "LE", ha="right")
+    plt.text(x_trailing_edge + 5, height - 10, "TE")
+
+    # No clear transition beyond 15.5 deg and for hysteresis part
+    if "back" not in alpha and (alpha[0] == "-" or float(alpha.split("-")[0]) <= 15.5):
         plt.axvline(x_transition, c="black", linestyle=(0, (1, 10)))
         plt.text(x_transition + 10, 20, f"x/c = {xc_transition:.2f}")
 
@@ -64,5 +75,6 @@ def plot_infrared_image_all_alphas(folder, prefix):
 
 
 if __name__ == "__main__":
-    plot_infrared_image_all_alphas("2dIR", "2D")
-    # plot_infrared_image("data/infrared/2dIR/8", "2D", "5")
+    # plot_infrared_image_all_alphas("2dIR", "2D")
+    plot_infrared_image_all_alphas("3dir", "3D")
+    # plot_infrared_image("data/infrared/2dIR/2", "2D", "2")
