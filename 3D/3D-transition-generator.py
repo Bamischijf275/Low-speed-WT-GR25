@@ -1,6 +1,9 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import matplotlib
+from measurements.plotting import save_plot
 
+plots  = False
 
 def grab_values(filename, skip_begin, skip_end):
     """
@@ -26,14 +29,14 @@ def plot_config(title):
     line_thickness = 6
     line_color = "#000000"
 
-    plt.ylim(-0.05, 0.3)
-    plt.xlim(0, 0.7)
-    plt.plot((0, 0), (0, 0.24), linewidth=line_thickness, color=line_color)
-    plt.plot((0, 0.64), (0.24, 0.24), linewidth=line_thickness, color=line_color)
-    plt.plot((0.64, 0.64), (0.24, 0), linewidth=line_thickness, color=line_color)
-    plt.plot((0.64, 0), (0.0, 0.0), linewidth=line_thickness, color=line_color)
+    plt.ylim(0.0, 0.7)
+    plt.xlim(-0.1, 0.3)
+    plt.plot((0, 0), (0, 0.64), linewidth=line_thickness, color=line_color)
+    plt.plot((0, 0.24), (0.64, 0.64), linewidth=line_thickness, color=line_color)
+    plt.plot((0.24, 0.24), (0.64, 0), linewidth=line_thickness, color=line_color)
+    plt.plot((0.24, 0), (0.0, 0.0), linewidth=line_thickness, color=line_color)
     plt.title(title)
-    plt.show()
+    plt.gca().invert_yaxis()
 
 
 colors = [
@@ -84,43 +87,56 @@ colors = [
     "#f40909",
 ]
 
+if plots:
+    # Plots without tip, LLT
+    plt.figure()
 
-# Plots without tip, LLT
-plt.figure()
-k = 2
-for i in np.arange(-2, 18, 0.5):
-    y_lst, XTrtop_lst = grab_values(f"OP_points_no_tip\LLT\MainWing_a={i}0_v=44.00ms.txt", 30, 0)
-    k += 1
-    plt.plot(y_lst, np.multiply(XTrtop_lst, 0.24), color=colors[k])
+    k = 2
+    for i in np.arange(-2, 18, 0.5):
+        y_lst, XTrtop_lst = grab_values(f"OP_points_no_tip\LLT\MainWing_a={i}0_v=44.00ms.txt", 30, 0)
+        k += 1
+        average = round(np.average(XTrtop_lst),2)
+        plt.plot(np.multiply(XTrtop_lst, 0.24),y_lst,  color=colors[k])
+        plot_config(f"Transition lines without tip, LLT [AOA={i} X/C ={average}]")
+        save_plot(f"Transition lines without tip, LLT AOA= {i}")
 
-plot_config("Transition lines without tip, LLT")
 
-# Plots without tip, VLM
-plt.figure()
-k = 6
-for i in np.arange(-0.5, 14.5, 0.5):
-    k += 1
-    y_lst, XTrtop_lst = grab_values(f"OP_points_no_tip\VLM\MainWing_a={i}0_v=44.00ms.txt", 40, 536)
-    plt.plot(y_lst, np.multiply(XTrtop_lst, 0.24), color=colors[k])
 
-plot_config("Transition lines without tip, VLM")
+    # Plots without tip, VLM
+    plt.figure()
+    k = 6
+    for i in np.arange(-0.5, 14.5, 0.5):
+        k += 1
+        y_lst, XTrtop_lst = grab_values(f"OP_points_no_tip\VLM\MainWing_a={i}0_v=44.00ms.txt", 40, 536)
+        average = round(np.average(XTrtop_lst), 2)
+        plt.plot(np.multiply(XTrtop_lst, 0.24),y_lst,  color=colors[k])
+        plot_config(f"Transition lines without tip, VLM [AOA={i} X/C ={average}]")
+        save_plot(f"Transition lines without tip, VLM AOA= {i}")
 
-# Plots with tip, LLT
-plt.figure()
-k = 0
-for i in np.arange(-3, 19, 0.5):
-    k += 1
-    y_lst, XTrtop_lst = grab_values(f"OP_points_tip\LLT\MainWing_a={i}0_v=44.00ms.txt", 30, 0)
-    plt.plot(y_lst, np.multiply(XTrtop_lst, 0.24), color=colors[k])
 
-plot_config("Transition lines with tip, LLT")
 
-# Plots with tip, VLM
-plt.figure()
-k = 3
-for i in np.arange(-3, 14, 0.5):
-    k += 1
-    y_lst, XTrtop_lst = grab_values(f"OP_points_tip\VLM\MainWing_a={i}0_v=44.00ms.txt", 76, 1544)
-    plt.plot(y_lst, np.multiply(XTrtop_lst, 0.24), color=colors[k])
+    # Plots with tip, LLT
+    plt.figure()
+    k = 0
+    for i in np.arange(-3, 19, 0.5):
+        k += 1
+        y_lst, XTrtop_lst = grab_values(f"OP_points_tip\LLT\MainWing_a={i}0_v=44.00ms.txt", 30, 0)
+        average = round(np.average(XTrtop_lst), 2)
+        plt.plot(np.multiply(XTrtop_lst, 0.24),y_lst,  color=colors[k])
+        plot_config(f"Transition lines with tip, LLT [AOA={i} X/C ={average}]")
+        save_plot(f"Transition lines with tip, LLT AOA= {i}")
 
-plot_config("Transition lines with tip, VLM")
+
+
+    # Plots with tip, VLM
+    plt.figure()
+    k = 3
+    for i in np.arange(-3, 14, 0.5):
+        k += 1
+        y_lst, XTrtop_lst = grab_values(f"OP_points_tip\VLM\MainWing_a={i}0_v=44.00ms.txt", 76, 1544)
+        average = round(np.average(XTrtop_lst), 2)
+        plt.plot(np.multiply(XTrtop_lst, 0.24),y_lst,  color=colors[k])
+        plot_config(f"Transition lines with tip, VLM [AOA={i} X/C ={average}]")
+        save_plot(f"Transition lines with tip, VLM AOA= {i}")
+
+
