@@ -51,7 +51,12 @@ def plot_infrared_image(folder, prefix, alpha):
     plt.text(x_trailing_edge + 5, height - 10, "TE")
 
     # No clear transition beyond 15.5 deg and for hysteresis part
-    if "back" not in alpha and (alpha[0] == "-" or float(alpha.split("-")[0]) <= 15.5):
+    # Only for 2D because 3D has curved transition line
+    if (
+        (prefix == "2D")
+        and ("back" not in alpha)
+        and (alpha[0] == "-" or float(alpha.split("-")[0]) <= 15.5)
+    ):
         plt.axvline(x_transition, c="black", linestyle=(0, (1, 10)))
         plt.text(x_transition + 10, 20, f"x/c = {xc_transition:.2f}")
 
