@@ -38,7 +38,7 @@ def plot_pressure_distribution(alpha, df, name, simulated):
     plt.ylabel("$C_p$")
     plt.legend()
 
-    # plt.ylim([-5.35 * 1.05, 1.04])
+    plt.ylim([-5.35 * 1.05, 2.8 * 1.05])
     plt.gca().invert_yaxis()
 
     format_plot()
@@ -64,3 +64,4 @@ if __name__ == "__main__":
     # plot_pressure_distribution_all_alphas("3D/corr_test", "3D")
 
     plot_pressure_distribution_all_alphas_simulated("3D/OP_points_no_tip/VLM", "3D_VLM_no_tip")
+    # plot_pressure_distribution_all_alphas_simulated("3D/OP_points_tip/VLM", "3D_VLM_tip")
