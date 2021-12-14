@@ -1,4 +1,5 @@
 import glob
+import os
 
 import numpy as np
 import pandas as pd
@@ -28,6 +29,52 @@ def load_pressures_from_file(filename):
     return df_clean, hysteresis  # return hysteresis seperately
 
 
+def load_pressures_from_file_simulated(folder, strip=1):
+    def parse_number(lines, lineno):
+        return float(lines[lineno - 1].split("=")[1].strip().split(" ")[0].strip())
+
+    if not (os.path.exists(folder) and os.path.isdir(folder)):
+        raise FileNotFoundError(f'"folder" is not an existing folder')
+
+    data = []
+    for file in glob.glob(f"{folder}/*.txt"):
+        with open(file) as f:
+            lines = f.readlines()
+
+        run_data = {
+            "Alpha": parse_number(lines, 6),
+            "Cl": parse_number(lines, 10),
+            "Cd": parse_number(lines, 12),
+            "Cm": parse_number(lines, 14),
+        }
+
+        # Only VLM gives pressure distribution data
+        if "VLM" in folder:
+            cp_data_start = cp_data_end = None
+            for i, line in enumerate(lines):
+                if line.strip() == f"Strip {strip}":
+                    cp_data_start = i + 1
+                if line.strip() == f"Strip {strip+1}":
+                    cp_data_end = i
+
+            # Strip is last one in file
+            if not cp_data_end:
+                cp_data_end = len(lines)
+
+            if not (cp_data_start and cp_data_end):
+                raise Exception(f"Invalid strip {strip}")
+
+            cp_data = np.genfromtxt(lines[cp_data_start:cp_data_end])[:, -1]
+            run_data.update({f"Cp_{i:03d}": cp for i, cp in enumerate(cp_data)})
+
+        data.append(run_data)
+
+    df = pd.DataFrame(data)
+    df = df.sort_values(by=["Alpha"], ignore_index=True)
+
+    return df, pd.DataFrame()
+
+
 def load_infrared_from_file(folder):
     individual_data = []
     for file in glob.glob(f"{folder}/*.csv"):
@@ -54,5 +101,7 @@ def load_infrared_from_file(folder):
 
 
 if __name__ == "__main__":
-    df = load_pressures_from_file("2D/corr_test")
+    # df = load_pressures_from_file("2D/corr_test")[0]
+    df = load_pressures_from_file_simulated("3D/OP_points_no_tip/VLM")[0]
     print(df.head())
+    print(df.info())
