@@ -84,10 +84,11 @@ def load_infrared_from_file(folder):
     # Average all images in the folder
     averaged_data = np.average(individual_data, axis=0)
 
-    # Normalize to [0, 1]
+    # Normalize to [0, 1] as required by Pillow
     min_temp = averaged_data.min()
     max_temp = averaged_data.max()
-    averaged_data = (averaged_data - min_temp) / (max_temp - min_temp)
+    range_temp = max_temp - min_temp
+    averaged_data = (averaged_data - min_temp) / range_temp
 
     image = Image.fromarray(np.uint8(averaged_data * 255))
     # Rotate so LE and TE are vertical
@@ -97,7 +98,11 @@ def load_infrared_from_file(folder):
     # Flip so flow comes from left
     image = image.transpose(method=Image.FLIP_LEFT_RIGHT)
 
-    return np.array(image), image.height
+    # Scale up to real temperature range
+    processed_image = np.array(image)
+    processed_image = processed_image / 255 * range_temp + min_temp
+
+    return processed_image, image.height
 
 
 if __name__ == "__main__":

@@ -17,11 +17,14 @@ sb.set(
 
 
 def format_plot(
-    xlocator=matplotlib.ticker.AutoMinorLocator(), ylocator=matplotlib.ticker.AutoMinorLocator()
+    xlocator=matplotlib.ticker.AutoMinorLocator(),
+    ylocator=matplotlib.ticker.AutoMinorLocator(),
+    zeroline=True,
 ):
     fig = plt.gcf()
     for ax in fig.axes[:1]:
-        ax.axhline(0, linewidth=1.5, c="black")
+        if zeroline:
+            ax.axhline(0, linewidth=1.5, c="black")
 
         ax.get_xaxis().set_minor_locator(xlocator)
         ax.get_yaxis().set_minor_locator(ylocator)
