@@ -7,8 +7,15 @@ from mpl_toolkits.axisartist.parasite_axes import HostAxes, ParasiteAxes
 degree = "\N{DEGREE SIGN}"
 
 # Load files
+# loading.load_pressures_from_file("2D/corr_test")   # 2D actual measurements
+# loading.load_pressures_from_file("3D/corr_test")   # 3D actual measurements
+# loading.load_pressures_from_file("balance/corr_test") # Balance measurements
+
+# loading.load_pressures_from_file_simulated("3D/OP_points_tip/LLT")   # 3D simulation measurements
+
+
 data2d, hys2d = loading.load_pressures_from_file("2D/corr_test")
-data3d, hys3d = loading.load_pressures_from_file("3D/corr_test")
+data3d, hys3d = loading.load_pressures_from_file("balance/corr_test")
 
 
 def convert_list(input):  # Convert into list if not
@@ -35,7 +42,7 @@ def x_alpha(y, data, mode, hys=[]):  # X vs Alpha plots
                     plt.plot(hys[j][x], hys[j][i], marker=".")
 
         plt.title(f"{', '.join(y)} vs {x} [{degree}] in {', '.join(mode)}")  # title
-        plt.xlim(-2.5, 18.5)  # x limit
+        # plt.xlim(-2.5, 18.5)  # x limit
 
         if len(mode) != 1:  # if only one curve, don't include legend
             plt.legend()
@@ -47,12 +54,12 @@ def x_alpha(y, data, mode, hys=[]):  # X vs Alpha plots
         # plt.show()
 
 
-def cl_cd(data, mode, hys=[]):  # drag polar graph
+def drag_polar(data, mode, hys=[]):  # drag polar graph
     data = convert_list(data)
     mode = convert_list(mode)
     hys = convert_list(hys)
 
-    x, y = "Cd", "Cl"
+    x, y = "CD", "CL"
     for i in range(len(data)):
         plt.plot(data[i][x], data[i][y], label=mode[i], marker=".")
 
@@ -62,8 +69,8 @@ def cl_cd(data, mode, hys=[]):  # drag polar graph
     if len(mode) != 1:
         plt.legend()
     plt.title(f"{y} vs {x} in [{', '.join(mode)}]")
-    plt.xlim(0, 0.25)
-    plt.ylim(-0.25, 1)
+    # plt.xlim(0, 0.25)
+    # plt.ylim(-0.25, 1)
     plt.xlabel(x)
     plt.ylabel(y)
     plt.grid(visible=True)
@@ -80,10 +87,14 @@ def multi_plot(y, data, mode, hys=[]):  # graphs for multiple y-axes
         bool3 = False
 
     limits = {
-        "Cl": [-0.25, 1],
-        "Cd": [-0.25 / 2, 0.25 * 2],
-        "Cm": [-0.125 * 2 / 3, 0.5 * 2 / 3],
+        "CL": [-0.25, 1],
+        "CD": [-0.25 / 2, 0.25 * 2],
+        "CM": [-0.125 * 2 / 3, 0.5 * 2 / 3],
     }  # Change until the 3 curves look nice and readable
+
+    # limits = {'Cl': [],
+    #           'Cd': [],
+    #           'Cm': []}
 
     host = fig.add_axes([0.15, 0.1, 0.6, 0.8], axes_class=HostAxes)
     par1 = ParasiteAxes(host, sharex=host)
@@ -135,106 +146,106 @@ def multi_plot(y, data, mode, hys=[]):  # graphs for multiple y-axes
     plotting.format_plot()
     # plt.show()
 
-
-x_alpha(["Cl", "Cd"], data2d, "2D", hys2d)
-plt.show()
-
-# x_alpha('Cl', data2d, '2D')
-# plotting.save_plot("Cl-Alpha 2D")
 #
-# x_alpha('Cl', data3d, '3D')
-# plotting.save_plot("Cl-Alpha 3D")
-#
-# x_alpha('Cl', data2d, '2D', hys2d)
-# plotting.save_plot("Cl-Alpha 2D with hysteresis")
-#
-# x_alpha('Cl', data3d, '3D', hys3d)
-# plotting.save_plot("Cl-Alpha 3D with hysteresis")
-#
-#
-# x_alpha('Cd', data2d, '2D')
-# plotting.save_plot("Cd-Alpha 2D")
-#
-# x_alpha('Cd', data3d, '3D')
-# plotting.save_plot("Cd-Alpha 3D")
-#
-# x_alpha('Cd', data2d, '2D', hys2d)
-# plotting.save_plot("Cd-Alpha 2D with hysteresis")
-#
-# x_alpha('Cd', data3d, '3D', hys3d)
-# plotting.save_plot("Cd-Alpha 3D with hysteresis")
-#
-#
-# x_alpha('Cm', data2d, '2D')
-# plotting.save_plot("Cm-Alpha 2D")
-#
-# x_alpha('Cm', data3d, '3D')
-# plotting.save_plot("Cm-Alpha 3D")
-#
-# x_alpha('Cm', data2d, '2D', hys2d)
-# plotting.save_plot("Cm-Alpha 2D with hysteresis")
-#
-# x_alpha('Cm', data3d, '3D', hys3d)
-# plotting.save_plot("Cm-Alpha 3D with hysteresis")
-#
-# cl_cd(data2d, "2D")
-# plotting.save_plot("Cl-Cd 2D")
-#
-# cl_cd(data3d, "3D")
-# plotting.save_plot("Cl-Cd 3D")
-#
-# cl_cd(data2d, "2D", hys2d)
-# plotting.save_plot("Cl-Cd 2D with hysteresis")
-#
-# cl_cd(data3d, "3D", hys3d)
-# plotting.save_plot("Cl-Cd 3D with hysteresis")
-#
-# cl_cd([data2d, data3d], ["2D", '3D'])
-# plotting.save_plot("Cl-Cd 2D & 3D")
-#
-# cl_cd([data2d, data3d], ["2D", '3D'], [hys2d, hys3d])
-# plotting.save_plot("Cl-Cd 2D & 3D with hysteresis")
-#
-#
-# x_alpha('Cl', [data2d, data3d], ['2D', '3D'])
-# plotting.save_plot("Cl-Alpha 2D & 3D")
-#
-# x_alpha('Cl', [data2d, data3d], ['2D', '3D'], [hys2d, hys3d])
-# plotting.save_plot("Cl-Alpha 2D & 3D with hysteresis")
-#
-#
-# x_alpha('Cd', [data2d, data3d], ['2D', '3D'])
-# plotting.save_plot("Cd-Alpha 2D & 3D")
-#
-#
-# x_alpha('Cd', [data2d, data3d], ['2D', '3D'], [hys2d, hys3d])
-# plotting.save_plot("Cd-Alpha 2D & 3D with hysteresis")
-#
-# x_alpha('Cm', [data2d, data3d], ['2D', '3D'])
-# plotting.save_plot("Cm-Alpha 2D & 3D")
-#
-# x_alpha('Cm', [data2d, data3d], ['2D', '3D'], [hys2d, hys3d])
-# plotting.save_plot("Cm-Alpha 2D & 3D with hysteresis")
-#
-#
-# x_alpha(['Cl', 'Cd', 'Cm'], [data2d], ['2D'])
-# plotting.save_plot("Cl,Cd,Cm-Alpha 2D")
-#
-#
-# x_alpha(['Cl', 'Cd', 'Cm'], [data2d], ['2D'], [hys2d])
-# plotting.save_plot("Cl,Cd,Cm-Alpha 2D with hysteresis")
-#
-# x_alpha(['Cl', 'Cd', 'Cm'], [data2d], ['3D'])
-# plotting.save_plot("Cl,Cd,Cm-Alpha 3D")
-#
-# x_alpha(['Cl', 'Cd', 'Cm'], [data2d], ['3D'], [hys3d])
-# plotting.save_plot("Cl,Cd,Cm-Alpha 3D with hysteresis")
-#
-# x_alpha(['Cl', 'Cd', 'Cm'], [data2d, data3d], ['2D', '3D'])
-# plotting.save_plot("Cl,Cd,Cm-Alpha 2D & 3D")
-#
-# x_alpha(['Cl', 'Cd', 'Cm'], [data2d, data3d], ['2D', '3D'], [hys2d, hys3d])
-# plotting.save_plot("Cl,Cd,Cm-Alpha 2D & 3D with hysteresis")
+# x_alpha(["CL", "CD"], data2d, "2D", hys2d)
+# plt.show()
+# 
+# x_alpha('CL', data2d, '2D')
+# plotting.save_plot("CL-Alpha 2D")
+# #
+x_alpha('CL', data3d, '3D')
+plotting.save_plot("CL-Alpha 3D")
+# #
+# x_alpha('CL', data2d, '2D', hys2d)
+# plotting.save_plot("CL-Alpha 2D with hysteresis")
+# 
+x_alpha('CL', data3d, '3D', hys3d)
+plotting.save_plot("CL-Alpha 3D with hysteresis")
+# #
+# 
+# x_alpha('CD', data2d, '2D')
+# plotting.save_plot("CD-Alpha 2D")
+# #
+x_alpha('CD', data3d, '3D')
+plotting.save_plot("CD-Alpha 3D")
+# #
+# x_alpha('CD', data2d, '2D', hys2d)
+# plotting.save_plot("CD-Alpha 2D with hysteresis")
+# 
+x_alpha('CD', data3d, '3D', hys3d)
+plotting.save_plot("CD-Alpha 3D with hysteresis")
+# #
+# #
+# x_alpha('CM', data2d, '2D')
+# plotting.save_plot("CM-Alpha 2D")
+# #
+x_alpha('CM', data3d, '3D')
+plotting.save_plot("CM-Alpha 3D")
+# #
+# x_alpha('CM', data2d, '2D', hys2d)
+# plotting.save_plot("CM-Alpha 2D with hysteresis")
+# 
+x_alpha('CM', data3d, '3D', hys3d)
+plotting.save_plot("CM-Alpha 3D with hysteresis")
+# #
+# drag_polar(data2d, "2D")
+# plotting.save_plot("CL-CD 2D")
+# #
+drag_polar(data3d, "3D")
+plotting.save_plot("CL-CD 3D")
+# #
+# drag_polar(data2d, "2D", hys2d)
+# plotting.save_plot("CL-CD 2D with hysteresis")
+# 
+drag_polar(data3d, "3D", hys3d)
+plotting.save_plot("CL-CD 3D with hysteresis")
+# 
+# drag_polar([data2d, data3d], ["2D", '3D'])
+# plotting.save_plot("CL-CD 2D & 3D")
+# 
+# drag_polar([data2d, data3d], ["2D", '3D'], [hys2d, hys3d])
+# plotting.save_plot("CL-CD 2D & 3D with hysteresis")
+# 
+# 
+# x_alpha('CL', [data2d, data3d], ['2D', '3D'])
+# plotting.save_plot("CL-Alpha 2D & 3D")
+# 
+# x_alpha('CL', [data2d, data3d], ['2D', '3D'], [hys2d, hys3d])
+# plotting.save_plot("CL-Alpha 2D & 3D with hysteresis")
+# 
+# 
+# x_alpha('CD', [data2d, data3d], ['2D', '3D'])
+# plotting.save_plot("CD-Alpha 2D & 3D")
+# 
+# 
+# x_alpha('CD', [data2d, data3d], ['2D', '3D'], [hys2d, hys3d])
+# plotting.save_plot("CD-Alpha 2D & 3D with hysteresis")
+# 
+# x_alpha('CM', [data2d, data3d], ['2D', '3D'])
+# plotting.save_plot("CM-Alpha 2D & 3D")
+# 
+# x_alpha('CM', [data2d, data3d], ['2D', '3D'], [hys2d, hys3d])
+# plotting.save_plot("CM-Alpha 2D & 3D with hysteresis")
+# 
+# 
+# x_alpha(['CL', 'CD', 'CM'], [data2d], ['2D'])
+# plotting.save_plot("CL,CD,CM-Alpha 2D")
+# 
+# 
+# x_alpha(['CL', 'CD', 'CM'], [data2d], ['2D'], [hys2d])
+# plotting.save_plot("CL,CD,CM-Alpha 2D with hysteresis")
+# #
+x_alpha(['CL', 'CD', 'CM'], [data3d], ['3D'])
+plotting.save_plot("CL,CD,CM-Alpha 3D")
+# #
+x_alpha(['CL', 'CD', 'CM'], [data3d], ['3D'], [hys3d])
+plotting.save_plot("CL,CD,CM-Alpha 3D with hysteresis")
+# 
+# x_alpha(['CL', 'CD', 'CM'], [data2d, data3d], ['2D', '3D'])
+# plotting.save_plot("CL,CD,CM-Alpha 2D & 3D")
+# 
+# x_alpha(['CL', 'CD', 'CM'], [data2d, data3d], ['2D', '3D'], [hys2d, hys3d])
+# plotting.save_plot("CL,CD,CM-Alpha 2D & 3D with hysteresis")
 
 
 # slope calculation
