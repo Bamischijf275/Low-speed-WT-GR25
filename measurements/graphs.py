@@ -15,39 +15,59 @@ degree = "\N{DEGREE SIGN}"
 # loading.load_pressures_from_file_simulated("3D/OP_points_tip/VLM")   # 3D VLM simulation measurements
 
 
-data2d, hys2d = loading.load_pressures_from_file("2D/corr_test")
-data3d, hys3d = loading.load_pressures_from_file("balance/corr_test")
-datavlm, trash = loading.load_pressures_from_file_simulated("3D/OP_points_tip/VLM")
+data_Actual_2D, hys2d = loading.load_pressures_from_file("2D/corr_test")
+data_Actual_3D, hys3d = loading.load_pressures_from_file("balance/corr_test")
+data_VLM_tip, trash = loading.load_pressures_from_file_simulated("3D/OP_points_tip/VLM")
+data_VLM_notip, trash = loading.load_pressures_from_file_simulated("3D/OP_points_no_tip/VLM")
+data_LLT_tip, trash = loading.load_pressures_from_file_simulated("3D/OP_points_tip/LLT")
+data_LLT_notip, trash = loading.load_pressures_from_file_simulated("3D/OP_points_no_tip/LLT")
+
+Actual_2D = ('2D Measurements', '2D')
+Actual_3D = ('3D Measurements', '3D')
+VLM_tip = ('VLM with tip', '3D')
+VLM_notip = ('VLM without tip', '3D')
+LLT_tip = ('LLT with tip', '3D')
+LLT_notip = ('LLT without tip', '3D')
+
+dic = {Actual_2D: data_Actual_2D,
+       Actual_3D: data_Actual_3D,
+       VLM_notip: data_VLM_notip,
+       VLM_tip: data_VLM_tip,
+       LLT_notip: data_LLT_notip,
+       LLT_tip: data_LLT_tip}
 
 
-print(max(datavlm['Cm']))
-print(min(datavlm['Cm']))
 def convert_list(input):  # Convert into list if not
     if not isinstance(input, list):
         input = [input]
     return input
 
 
-def x_alpha(y, data, mode, tags, hys=[]):  # X vs Alpha plots
+def x_alpha(y, info, hys=[]):  # X vs Alpha plots
     x = "Alpha"
-    y = convert_list(y)
-    data = convert_list(data)
-    mode = convert_list(mode)
+
+    info = convert_list(info)
     hys = convert_list(hys)
-    tags = convert_list(tags)
+    mode, tags, data = [], [], []
+    for pack in info:
+        mode.append(pack[0])
+        tags.append(pack[1])
+        data.append(dic[pack])
 
     label = []
-    for k in y:
-        if mode[0]:
-            label.append("${}_{}$".format(k[0], k[1]))
+    for i in range(len(y)):
+        if '2D' in tags:
+            label.append("${}_{}$".format(y[i][0], y[i][1]))
+        else:
+            label.append("${}_{}$".format(y[i][0], y[i][1].upper()))
 
     if len(y) != 1 and len(data) == 1 and len(mode) == 1:
-        multi_plot(y, data[0], mode[0], hys)  # Plot with varying y-axes
+        multi_plot(y, data[0], mode[0], label, hys)  # Plot with varying y-axes
     else:
         for i in y:  # Plot all the lines
             for j in range(len(data)):  # 2D/3D/Both
                 # plt.plot(data[j][x], data[j][i], label=(f"{i} in {mode[j]}"), marker=".")
-                plt.plot(data[j][x], data[j][i], label=r'${}_{}$, {}'.format(i[0], i[1], mode[j]), marker=".")
+                plt.plot(data[j][x], data[j][i], label=r'{}, {}'.format(label[i], mode[j]), marker=".")
                 if len(hys) != 0:  # plot hysteresis with different color
                     plt.plot(hys[j][x], hys[j][i], marker=".")
 
@@ -62,21 +82,23 @@ def x_alpha(y, data, mode, tags, hys=[]):  # X vs Alpha plots
         plt.ylabel(r', '.join(label))
         plt.grid(visible=True)
         plotting.format_plot()
-        # plt.show()
+        plt.show()
 
 
-def drag_polar(data, mode, tags, hys=[]):  # drag polar graph
-    data = convert_list(data)
-    mode = convert_list(mode)
+def drag_polar(info, hys=[]):  # drag polar graph
+    info = convert_list(info)
     hys = convert_list(hys)
-    tags = convert_list(tags)
+    mode, tags, data = [], [], []
+    for pack in info:
+        mode.append(pack[0])
+        tags.append(pack[1])
+        data.append(dic[pack])
+
+
 
     x, y = "Cd", "Cl"
 
     title = 'Drag polar in ' + ', '.join(mode)
-
-    if len(hys) != 0: # include hysteresis in title
-        title += ' (with hysteresis)'
 
     if '2D' in tags:  # set x, y labels
         label = ['$C_d$', '$C_l$']
@@ -94,28 +116,16 @@ def drag_polar(data, mode, tags, hys=[]):  # drag polar graph
     if len(mode) != 1:
         plt.legend()
 
-    # plt.title(f"{y} vs {x} in [{', '.join(mode)}]")
-
-    # plt.title(r"$C_D$ vd $C_L$" + ', '.join(mode))
-
-    # plt.title(title)
-
     # plt.xlim(0, 0.25)
     # plt.ylim(-0.25, 1)
     plt.xlabel(r'{}'.format(label[0]))
     plt.ylabel(r'{}'.format(label[1]))
-    plt.grid(visible=True)
     plotting.format_plot()
-    # plt.show()
+    plt.show()
 
 
-def multi_plot(y, data, mode, tags, hys=[]):  # graphs for multiple y-axes
-    label = []
-    for element in y:
-        if mode == '2D':
-            label.append(element)
-        elif mode == '3D':
-            pass
+def multi_plot(y, data, mode, label, hys=[]):  # graphs for multiple y-axes
+
 
     fig, ax = plt.subplots()
     fig.subplots_adjust(right=0.75)
@@ -133,16 +143,13 @@ def multi_plot(y, data, mode, tags, hys=[]):  # graphs for multiple y-axes
         "Cl": [min(data["Cl"] - 0.1), max(data["Cl"]) + 0.1],
         "Cd": [min(data["Cd"] - 0.2), max(data["Cd"]) + 0.6],
         "Cm": [min(data["Cm"] - 0.4), max(data["Cm"]) + 1],
-    }  # Change until the 3 curves look nice and readable
+    }  # Set limits of curves so they don't intersect a lot
 
-    # limits = {'Cl': [],
-    #           'Cd': [],
-    #           'Cm': []}
 
-    p1, = ax.plot(data["Alpha"], data[y[0]], "b-", label=y[0], marker=".")
-    p2, = twin1.plot(data["Alpha"], data[y[1]], "r-", label=y[1], marker=".")
+    p1, = ax.plot(data["Alpha"], data[y[0]], "b-", label=label[0], marker=".")
+    p2, = twin1.plot(data["Alpha"], data[y[1]], "r-", label=label[1], marker=".")
     if bool3:
-        p3, = twin2.plot(data["Alpha"], data[y[2]], "g-",  label=y[2], marker=".")
+        p3, = twin2.plot(data["Alpha"], data[y[2]], "g-",  label=label[2], marker=".")
 
     # ax.set_xlim(0, 2)
     ax.set_ylim(limits[y[0]])
@@ -150,9 +157,9 @@ def multi_plot(y, data, mode, tags, hys=[]):  # graphs for multiple y-axes
     twin2.set_ylim(limits[y[2]])
 
     ax.set_xlabel('\u03B1 (deg)')
-    ax.set_ylabel(y[0])
-    twin1.set_ylabel(y[1])
-    twin2.set_ylabel(y[2])
+    ax.set_ylabel(label[0])
+    twin1.set_ylabel(label[1])
+    twin2.set_ylabel(label[2])
 
     ax.yaxis.label.set_color(p1.get_color())
     twin1.yaxis.label.set_color(p2.get_color())
@@ -167,112 +174,15 @@ def multi_plot(y, data, mode, tags, hys=[]):  # graphs for multiple y-axes
     ax.legend(handles=[p1, p2, p3])
 
     plotting.format_plot()
+    plt.show()
 
-# x_alpha(['Cl', 'Cm', 'Cd'], [data3d], ['3D'])
-# plt.show()
+def analyse(data, hys=[]):
+    data = convert_list(data)
 
-# drag_polar([data2d, data3d], ["2D", "3D"], [hys2d, hys3d])
-# plt.show()
-drag_polar([data2d, data3d], ["Measurements", ""], "2D")
-plt.show()
-
-# x_alpha('Cl', [datavlm, data3d], ['VLM', 'Measurement'])
-# plt.show()
-# plotting.save_plot("Cl-Alpha 2D")
-# #
-# x_alpha('Cl', data3d, '3D')
-# plotting.save_plot("Cl-Alpha 3D")
-# #
-# x_alpha('Cl', data2d, '2D', hys2d)
-# plotting.save_plot("Cl-Alpha 2D with hysteresis")
-# 
-# x_alpha('Cl', data3d, '3D', hys3d)
-# plotting.save_plot("Cl-Alpha 3D with hysteresis")
-# #
-# 
-# x_alpha('Cd', data2d, '2D')
-# plotting.save_plot("Cd-Alpha 2D")
-# #
-# x_alpha('Cd', data3d, '3D')
-# plotting.save_plot("Cd-Alpha 3D")
-# #
-# x_alpha('Cd', data2d, '2D', hys2d)
-# plotting.save_plot("Cd-Alpha 2D with hysteresis")
-# 
-# x_alpha('Cd', data3d, '3D', hys3d)
-# plotting.save_plot("Cd-Alpha 3D with hysteresis")
-# #
-# #
-# x_alpha('Cm', data2d, '2D')
-# plotting.save_plot("Cm-Alpha 2D")
-# #
-# x_alpha('Cm', data3d, '3D')
-# plotting.save_plot("Cm-Alpha 3D")
-# #
-# x_alpha('Cm', data2d, '2D', hys2d)
-# plotting.save_plot("Cm-Alpha 2D with hysteresis")
-# 
-# x_alpha('Cm', data3d, '3D', hys3d)
-# plotting.save_plot("Cm-Alpha 3D with hysteresis")
-# #
-# drag_polar(data2d, "2D")
-# plotting.save_plot("Cl-Cd 2D")
-# #
-# drag_polar(data3d, "3D")
-# plotting.save_plot("Cl-Cd 3D")
-# #
-# drag_polar(data2d, "2D", hys2d)
-# plotting.save_plot("Cl-Cd 2D with hysteresis")
-# 
-# drag_polar(data3d, "3D", hys3d)
-# plotting.save_plot("Cl-Cd 3D with hysteresis")
-# 
-# drag_polar([data2d, data3d], ["2D", '3D'])
-# plotting.save_plot("Cl-Cd 2D & 3D")
-# 
-# drag_polar([data2d, data3d], ["2D", '3D'], [hys2d, hys3d])
-# plotting.save_plot("Cl-Cd 2D & 3D with hysteresis")
-# 
-# 
-# x_alpha('Cl', [data2d, data3d], ['2D', '3D'])
-# plotting.save_plot("Cl-Alpha 2D & 3D")
-# 
-# x_alpha('Cl', [data2d, data3d], ['2D', '3D'], [hys2d, hys3d])
-# plotting.save_plot("Cl-Alpha 2D & 3D with hysteresis")
-# 
-# 
-# x_alpha('Cd', [data2d, data3d], ['2D', '3D'])
-# plotting.save_plot("Cd-Alpha 2D & 3D")
-# 
-# 
-# x_alpha('Cd', [data2d, data3d], ['2D', '3D'], [hys2d, hys3d])
-# plotting.save_plot("Cd-Alpha 2D & 3D with hysteresis")
-# 
-# x_alpha('Cm', [data2d, data3d], ['2D', '3D'])
-# plotting.save_plot("Cm-Alpha 2D & 3D")
-# 
-# x_alpha('Cm', [data2d, data3d], ['2D', '3D'], [hys2d, hys3d])
-# plotting.save_plot("Cm-Alpha 2D & 3D with hysteresis")
-# 
-# 
-# x_alpha(['Cl', 'Cd', 'Cm'], [data2d], ['2D'])
-# plotting.save_plot("Cl,Cd,Cm-Alpha 2D")
-# 
-# 
-# x_alpha(['Cl', 'Cd', 'Cm'], [data2d], ['2D'], [hys2d])
-# plotting.save_plot("Cl,Cd,Cm-Alpha 2D with hysteresis")
-# #
-# x_alpha(['Cl', 'Cd', 'Cm'], [data3d], ['3D'])
-# plotting.save_plot("Cl,Cd,Cm-Alpha 3D")
-# # #
-# x_alpha(['Cl', 'Cd', 'Cm'], [data3d], ['3D'], [hys3d])
-# plotting.save_plot("Cl,Cd,Cm-Alpha 3D with hysteresis")
-# 
-# x_alpha(['Cl', 'Cd', 'Cm'], [data2d, data3d], ['2D', '3D'])
-# plotting.save_plot("Cl,Cd,Cm-Alpha 2D & 3D")
-# 
-# x_alpha(['Cl', 'Cd', 'Cm'], [data2d, data3d], ['2D', '3D'], [hys2d, hys3d])
-# plotting.save_plot("Cl,Cd,Cm-Alpha 2D & 3D with hysteresis")
+    x_alpha(['Cl', 'Cd', 'Cm'], data, hys)
+    x_alpha(['Cl'], data, hys)
+    x_alpha(['Cd'], data, hys)
+    x_alpha(['Cm'], data, hys)
 
 
-# slope calculation
+analyse([Actual_2D, Actual_3D])
