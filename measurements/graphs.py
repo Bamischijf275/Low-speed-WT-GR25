@@ -175,7 +175,7 @@ def multi_plot(y, data, mode, tags, hys=[]):  # graphs for multiple y-axes
 # plt.show()
 drag_polar([data2d, data3d], ["Measurements", ""], "2D")
 plt.show()
-# 
+
 # x_alpha('Cl', [datavlm, data3d], ['VLM', 'Measurement'])
 # plt.show()
 # plotting.save_plot("Cl-Alpha 2D")
