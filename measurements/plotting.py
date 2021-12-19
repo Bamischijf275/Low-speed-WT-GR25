@@ -44,4 +44,5 @@ def save_plot(name: str, type="pdf"):
         bbox_inches="tight",
         pad_inches=0,
     )
+
     plt.close()
