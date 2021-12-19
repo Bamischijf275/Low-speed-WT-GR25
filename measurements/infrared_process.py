@@ -20,7 +20,7 @@ def find_transition_point(image):
     # Find pixel-by-pixel difference along chord
     chordwise_difference = np.diff(spanwise_average)
     # Moving average with window size 3
-    unf = chordwise_difference
+    unfiltered = chordwise_difference
     chordwise_difference = uniform_filter1d(chordwise_difference, size=3)
 
     # Crop image to wing without background
@@ -36,11 +36,18 @@ def find_transition_point(image):
     xc_transition = (chordwise_difference.argmin() + EDGE_CUTOFF) / chord_length
 
     # Convert to image coordinates for line in plot
-    x_transition = x_leading_edge + xc_transition * chord_length
+    x_transition = int(x_leading_edge + xc_transition * chord_length)
 
-    plt.figure(figsize=[12, 5])
+    plt.figure(figsize=[12, 6])
 
     plt.axvspan(x_leading_edge, x_leading_edge + EDGE_CUTOFF, color="black", alpha=0.15, zorder=-2)
+    plt.axvspan(
+        x_leading_edge + EDGE_CUTOFF,
+        x_trailing_edge - 2 * EDGE_CUTOFF,
+        color="green",
+        alpha=0.1,
+        zorder=-2,
+    )
     plt.axvspan(
         x_trailing_edge - 2 * EDGE_CUTOFF, x_trailing_edge, color="black", alpha=0.15, zorder=-2
     )
@@ -52,7 +59,7 @@ def find_transition_point(image):
     plt.text(x_trailing_edge + 5, -0.22, "TE")
     plt.text(x_transition, chordwise_difference.min() - 0.035, "Transition", ha="center")
 
-    plt.plot(unf, label="Unfiltered", zorder=1)
+    plt.plot(unfiltered, label="Unfiltered", zorder=1)
     plt.plot(
         np.arange(0, len(chordwise_difference)) + x_leading_edge + EDGE_CUTOFF,
         chordwise_difference,
@@ -73,9 +80,25 @@ def find_transition_point(image):
     # plt.show()
     save_plot("processing_infrared_diff_along_chord")
 
-    plt.figure(figsize=[12, 3.5])
+    plt.figure(figsize=[12, 4.5])
 
     plt.plot(spanwise_average)
+
+    plt.text(
+        x_transition,
+        spanwise_average[x_transition] - 0.18,
+        "Transition",
+        ha="center",
+    )
+    plt.scatter(
+        x_transition,
+        spanwise_average[x_transition],
+        marker="x",
+        color="black",
+        s=30,
+        zorder=20,
+    )
+
     plt.xlabel("Pixel in chordwise direction [-]")
     plt.ylabel("Temperature [°C]")
     format_plot(zeroline=False)
