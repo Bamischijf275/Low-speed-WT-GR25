@@ -105,13 +105,34 @@ def load_infrared_from_file(folder):
     return processed_image, image.height
 
 
-def load_pressures_from_xfoil(filename):
-    data = pd.read_csv(f"{filename}", delimiter=r"\s+", header=0, index_col=False)
-    data2 = pd.DataFrame.to_numpy(data, dtype=float)
-    x = data2[:, 0]
-    cp = data2[:, 1]
-    filename = filename
-    return x, cp, filename
+def load_pressures_from_xfoil():
+    df_all = None
+    for file in glob.glob(f"data/xfoil/Pressure distributions/pressure_141_visc_*"):
+        df = pd.read_csv(file, delimiter=r"\s+", skiprows=1, header=None, index_col=False)
+
+        # Set proper column names
+        col_names_upper = [f"Cpu_{i:03d}" for i in range(71, 0, -1)]
+        col_names_lower = [f"Cpl_{i:03d}" for i in range(2, 72)]
+
+        df.iloc[:, 0] = col_names_upper + col_names_lower
+
+        df = df.transpose()
+        df.columns = df.iloc[0]
+        df = df.drop(df.index[0])
+
+        # Convert strings to float
+        df = df.apply(pd.to_numeric)
+
+        df["Alpha"] = float(file.split("_")[-1].replace(",", "."))
+
+        if df_all is None:
+            df_all = df
+        else:
+            df_all = pd.concat([df_all, df])
+
+    df_all = df_all.sort_values(by=["Alpha"], ignore_index=True)
+
+    return df_all
 
 
 def load_polars_from_xfoil(filename):
