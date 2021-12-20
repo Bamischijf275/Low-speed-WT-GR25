@@ -1,6 +1,5 @@
 from math import pi, sqrt
 
-import pandas as pd
 import scipy.stats
 
 from measurements.loading import (
@@ -31,6 +30,12 @@ def find_cl_max(df):
     print(f"Cl max = {cl_max:.4f} at alpha = {alpha_cl_max:.1f}°")
 
 
+def find_cd_min(df):
+    cd_min = df[_find_cd_col(df)].min()
+    alpha_cd_min = df.iloc[df[_find_cd_col(df)].argmin()]["Alpha"]
+    print(f"Cd min = {cd_min:.4f} at alpha = {alpha_cd_min:.1f}°")
+
+
 def _find_cl_col(df):
     if "Cl" in df:
         return "Cl"
@@ -38,6 +43,15 @@ def _find_cl_col(df):
         return "CL"
     else:
         raise Exception("Data does not contain lift coefficient")
+
+
+def _find_cd_col(df):
+    if "Cd" in df:
+        return "Cd"
+    elif "CD" in df:
+        return "CD"
+    else:
+        raise Exception("Data does not contain drag coefficient")
 
 
 def helmbold_equation(Cl_alpha_rad, A=5.345):
@@ -55,29 +69,31 @@ if __name__ == "__main__":
     slope_2d = find_lift_curve_slope(df, -2, 6)
     find_lift_curve_slope(df, 6, 11.5)
     find_cl_max(df)
+    find_cd_min(df)
 
     print("--- 3D ---")
     df = load_pressures_from_file("balance/corr_test")[0]
     find_lift_curve_slope(df, -2, 6)
     find_lift_curve_slope(df, 6, 11.5)
     find_cl_max(df)
+    find_cd_min(df)
 
     print("--- HELMBOLD ---")
     helmbold_equation(slope_2d)
 
     print("\n### SIMULATED (VLM) ###")
     print("--- 2D (XFOIL) ---")
-    x, y, _ = load_polars_from_xfoil("data/xfoil/Polars/141viscnew")
-    df = pd.DataFrame({"Alpha": x, "Cl": y})
+    df = load_polars_from_xfoil("141viscnew")[0]
     slope_2d = find_lift_curve_slope(df, -2, 6)
     find_lift_curve_slope(df, 6, 11.5)
     find_cl_max(df)
+    find_cd_min(df)
 
     print("--- 3D ---")
     df = load_pressures_from_file_simulated("3D/OP_points_tip/VLM")[0]
-    find_lift_curve_slope(df, -2, 6)
-    find_lift_curve_slope(df, 6, 11.5)
+    find_lift_curve_slope(df, -2, 13)
     find_cl_max(df)
+    find_cd_min(df)
 
     print("--- HELMBOLD ---")
     helmbold_equation(slope_2d)
@@ -86,8 +102,9 @@ if __name__ == "__main__":
     print("--- 3D ---")
     df = load_pressures_from_file_simulated("3D/OP_points_tip/LLT")[0]
     find_lift_curve_slope(df, -2, 6)
-    find_lift_curve_slope(df, 6, 11.5)
+    find_lift_curve_slope(df, 6, 13)
     find_cl_max(df)
+    find_cd_min(df)
 
     print("--- HELMBOLD ---")
     helmbold_equation(slope_2d)
