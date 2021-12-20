@@ -115,16 +115,20 @@ def load_pressures_from_xfoil(filename):
 
 
 def load_polars_from_xfoil(filename):
-    data = pd.read_csv(f"{filename}", delimiter=r"\s+", header=6, index_col=False)
-    data2 = pd.DataFrame.to_numpy(data, dtype=float)
-    x = data2[:, 0]  # Choosing x axis. 0 for Alpha, 2 for Cd
-    y = data2[:, 1]  # Choosing y axis. 1 for Cl, 2 for Cd, 4 for Cm
-    filename = filename
-    return x, y, filename
+    df = pd.read_csv(f"data/xfoil/Polars/{filename}", delimiter=r"\s+", header=5, index_col=False)
+
+    # Select only needed columns
+    df = df.iloc[1:, [0, 1, 2, 4]]
+
+    # Rename to common names
+    df = df.rename({"alpha": "Alpha", "CL": "Cl", "CD": "Cd", "CM": "Cm"}, axis=1)
+
+    return df, pd.DataFrame()
 
 
 if __name__ == "__main__":
     # df = load_pressures_from_file("2D/corr_test")[0]
-    df = load_pressures_from_file_simulated("3D/OP_points_no_tip/VLM")[0]
+    df = load_polars_from_xfoil("141viscnew")[0]
+    # df = load_pressures_from_file_simulated("3D/OP_points_no_tip/VLM")[0]
     print(df.head())
     print(df.info())
