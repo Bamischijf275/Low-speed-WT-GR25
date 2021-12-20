@@ -120,6 +120,9 @@ def load_polars_from_xfoil(filename):
     # Select only needed columns
     df = df.iloc[1:, [0, 1, 2, 4]]
 
+    # Convert strings to float
+    df = df.apply(pd.to_numeric)
+
     # Rename to common names
     df = df.rename({"alpha": "Alpha", "CL": "Cl", "CD": "Cd", "CM": "Cm"}, axis=1)
 
