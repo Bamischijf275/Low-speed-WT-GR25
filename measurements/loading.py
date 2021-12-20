@@ -104,11 +104,12 @@ def load_infrared_from_file(folder):
 
     return processed_image, image.height
 
+
 def load_pressures_from_xfoil(filename):
     data = pd.read_csv(f"{filename}", delimiter=r"\s+", header=0, index_col=False)
     data2 = pd.DataFrame.to_numpy(data, dtype=float)
-    x = data2[:,0]
-    cp = data2[:,1]
+    x = data2[:, 0]
+    cp = data2[:, 1]
     filename = filename
     return x, cp, filename
 
@@ -116,10 +117,11 @@ def load_pressures_from_xfoil(filename):
 def load_polars_from_xfoil(filename):
     data = pd.read_csv(f"{filename}", delimiter=r"\s+", header=6, index_col=False)
     data2 = pd.DataFrame.to_numpy(data, dtype=float)
-    x = data2[:,0]     # Choosing x axis. 0 for Alpha, 2 for Cd
-    y = data2[:,1]     # Choosing y axis. 1 for Cl, 2 for Cd, 4 for Cm
+    x = data2[:, 0]  # Choosing x axis. 0 for Alpha, 2 for Cd
+    y = data2[:, 1]  # Choosing y axis. 1 for Cl, 2 for Cd, 4 for Cm
     filename = filename
     return x, y, filename
+
 
 if __name__ == "__main__":
     # df = load_pressures_from_file("2D/corr_test")[0]
