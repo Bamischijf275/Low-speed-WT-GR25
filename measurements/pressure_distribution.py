@@ -69,7 +69,7 @@ def plot_pressure_distribution_superposition(file, alphas, prefix):
     save_plot(f"pressure_dist_superposition_{prefix}")
 
 
-def plot_pressure_distribution_superposition_2d_3d(file_2d, file_3d, alpha):
+def plot_pressure_distribution_superposition_2d_3d(file_2d, file_3d, alphas):
     df_2d, _ = load_pressures_from_file(file_2d)
     df_3d, _ = load_pressures_from_file(file_3d)
 
@@ -81,15 +81,28 @@ def plot_pressure_distribution_superposition_2d_3d(file_2d, file_3d, alpha):
 
     colors = sb.color_palette()
 
-    # Plot 2D pressure distribution
-    x_stations, cp_upper, cp_lower = _select_data(alpha, df_2d, source="measurements")
-    plt.plot(x_stations, cp_upper, label="2D", marker="D", c=colors[0])
-    plt.plot(x_stations, cp_lower, marker="D", c=colors[0])
+    for i, alpha in enumerate(alphas):
+        # Plot 2D pressure distribution
+        x_stations, cp_upper, cp_lower = _select_data(alpha, df_2d, source="measurements")
+        plt.plot(
+            x_stations,
+            cp_upper,
+            label=r"$\alpha$ " + f"= {alpha:.1f}° (2D)",
+            marker="D",
+            c=colors[2 * i],
+        )
+        plt.plot(x_stations, cp_lower, marker="D", c=colors[2 * i])
 
-    # Plot 3D pressure distribution
-    x_stations, cp_upper, cp_lower = _select_data(alpha, df_3d, source="measurements")
-    plt.plot(x_stations, cp_upper, label="3D", marker="D", c=colors[1])
-    plt.plot(x_stations, cp_lower, marker="D", c=colors[1])
+        # Plot 3D pressure distribution
+        x_stations, cp_upper, cp_lower = _select_data(alpha, df_3d, source="measurements")
+        plt.plot(
+            x_stations,
+            cp_upper,
+            label=r"$\alpha$ " + f"= {alpha:.1f}° (3D)",
+            marker="D",
+            c=colors[2 * i + 1],
+        )
+        plt.plot(x_stations, cp_lower, marker="D", c=colors[2 * i + 1])
 
     plt.xlabel("x/c")
     plt.ylabel("$C_p$")
@@ -99,7 +112,7 @@ def plot_pressure_distribution_superposition_2d_3d(file_2d, file_3d, alpha):
     plt.gca().invert_yaxis()
 
     format_plot()
-    save_plot(f"pressure_dist_superposition_2d_3d_{alpha}")
+    save_plot(f"pressure_dist_superposition_2d_3d")
 
 
 def _select_data(alpha, df, source):
@@ -162,8 +175,8 @@ if __name__ == "__main__":
     # plot_pressure_distribution_all_alphas("3D/corr_test", "3D")
 
     plot_pressure_distribution_superposition("2D/corr_test", [0, 5, 10, 14], "2D")
-    plot_pressure_distribution_superposition("3D/corr_test", [0, 5, 10, 14], "3D")
-    plot_pressure_distribution_superposition_2d_3d("2D/corr_test", "3D/corr_test", 14)
+    plot_pressure_distribution_superposition("3D/corr_test", [0, 5, 10, 16], "3D")
+    plot_pressure_distribution_superposition_2d_3d("2D/corr_test", "3D/corr_test", [5, 14])
 
     # plot_pressure_distribution_all_alphas_xflr("3D/OP_points_no_tip/VLM", "3D_VLM_no_tip")
     # plot_pressure_distribution_all_alphas_xflr("3D/OP_points_tip/VLM", "3D_VLM_tip")
