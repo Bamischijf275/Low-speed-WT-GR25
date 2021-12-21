@@ -69,6 +69,39 @@ def plot_pressure_distribution_superposition(file, alphas, prefix):
     save_plot(f"pressure_dist_superposition_{prefix}")
 
 
+def plot_pressure_distribution_superposition_2d_3d(file_2d, file_3d, alpha):
+    df_2d, _ = load_pressures_from_file(file_2d)
+    df_3d, _ = load_pressures_from_file(file_3d)
+
+    # Round to the next 0.5
+    df_2d["Alpha"] = (df_2d["Alpha"] * 2).round() / 2
+    df_3d["Alpha"] = (df_3d["Alpha"] * 2).round() / 2
+
+    plt.figure(figsize=[12, 6])
+
+    colors = sb.color_palette()
+
+    # Plot 2D pressure distribution
+    x_stations, cp_upper, cp_lower = _select_data(alpha, df_2d, source="measurements")
+    plt.plot(x_stations, cp_upper, label="2D", marker="D", c=colors[0])
+    plt.plot(x_stations, cp_lower, marker="D", c=colors[0])
+
+    # Plot 3D pressure distribution
+    x_stations, cp_upper, cp_lower = _select_data(alpha, df_3d, source="measurements")
+    plt.plot(x_stations, cp_upper, label="3D", marker="D", c=colors[1])
+    plt.plot(x_stations, cp_lower, marker="D", c=colors[1])
+
+    plt.xlabel("x/c")
+    plt.ylabel("$C_p$")
+    plt.legend()
+
+    plt.ylim([-5.35 * 1.05, 2.8 * 1.05])
+    plt.gca().invert_yaxis()
+
+    format_plot()
+    save_plot(f"pressure_dist_superposition_2d_3d_{alpha}")
+
+
 def _select_data(alpha, df, source):
     row = df[df["Alpha"] == alpha]
     if len(row) == 0:
@@ -128,10 +161,11 @@ if __name__ == "__main__":
     # plot_pressure_distribution_all_alphas("2D/corr_test", "2D")
     # plot_pressure_distribution_all_alphas("3D/corr_test", "3D")
 
-    # plot_pressure_distribution_superposition("2D/corr_test", [0, 5, 10, 14], "2D")
-    # plot_pressure_distribution_superposition("3D/corr_test", [0, 5, 10, 15.5], "3D")
+    plot_pressure_distribution_superposition("2D/corr_test", [0, 5, 10, 14], "2D")
+    plot_pressure_distribution_superposition("3D/corr_test", [0, 5, 10, 14], "3D")
+    plot_pressure_distribution_superposition_2d_3d("2D/corr_test", "3D/corr_test", 14)
 
     # plot_pressure_distribution_all_alphas_xflr("3D/OP_points_no_tip/VLM", "3D_VLM_no_tip")
     # plot_pressure_distribution_all_alphas_xflr("3D/OP_points_tip/VLM", "3D_VLM_tip")
 
-    plot_pressure_distribution_all_alphas_xfoil()
+    # plot_pressure_distribution_all_alphas_xfoil()
