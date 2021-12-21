@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib
+
 # from measurements.plotting import save_plot
 import os
 
@@ -23,6 +24,7 @@ def grab_values(filename, skip_begin, skip_end):
     # The last values are the actual total values! The sectional values are the lists!
     return y_lst, XTrtop_lst
 
+
 def save_plot(name: str, type="pdf"):
     os.makedirs("plots", exist_ok=True)
     name = name.replace(".", "-")
@@ -33,6 +35,7 @@ def save_plot(name: str, type="pdf"):
         pad_inches=0,
     )
     plt.close()
+
 
 def plot_config(title):
     """
