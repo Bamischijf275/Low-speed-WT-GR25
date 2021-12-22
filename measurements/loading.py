@@ -26,7 +26,7 @@ def load_pressures_from_file(filename):
     hysteresis = df.iloc[idx_alpha_max - 1 :]
     df_clean = df.iloc[:idx_alpha_max]
 
-    return df_clean, hysteresis  # return hysteresis seperately
+    return df_clean, hysteresis, df  # return hysteresis seperately
 
 
 def load_pressures_from_file_simulated(folder, strip=1):
